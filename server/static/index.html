@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SmartTraffic - Dashboard</title>
+<style>
+  :root {
+    --bg: #0f1420;
+    --panel: #1a2233;
+    --panel-2: #222c42;
+    --text: #e8eefc;
+    --muted: #8fa0c0;
+    --red: #ff3b3b;
+    --yellow: #ffc233;
+    --green: #2ee06a;
+    --accent: #4d8dff;
+    --border: #2c3853;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Segoe UI", system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+  header {
+    display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 5;
+  }
+  h1 { font-size: 18px; margin: 0; letter-spacing: .5px; }
+  .status { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: #666; }
+  .dot.on { background: var(--green); box-shadow: 0 0 8px var(--green); }
+  .dot.off { background: var(--red); }
+  .btn {
+    background: var(--panel-2); color: var(--text);
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 14px; font-size: 13px; cursor: pointer;
+    transition: .15s;
+  }
+  .btn:hover { border-color: var(--accent); }
+  .btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn.danger { border-color: #7a2b2b; color: #ff8f8f; }
+  .btn.danger:hover { background: #3a1a1a; }
+  .modes { display: flex; gap: 8px; }
+
+  main {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+  }
+  .card h2 { margin: 0; font-size: 16px; }
+  .card .sub { font-size: 12px; color: var(--muted); }
+
+  .semaphore {
+    background: #0b0f18; border: 1px solid var(--border);
+    border-radius: 12px; padding: 12px 14px;
+    display: flex; flex-direction: column; gap: 10px; align-items: center;
+  }
+  .bulb {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: #161c2a; border: 2px solid #0b0f18;
+    transition: .2s;
+  }
+  .bulb.r.on { background: var(--red);    box-shadow: 0 0 18px var(--red); }
+  .bulb.y.on { background: var(--yellow); box-shadow: 0 0 18px var(--yellow); }
+  .bulb.g.on { background: var(--green);  box-shadow: 0 0 18px var(--green); }
+
+  .stats { width: 100%; font-size: 13px; }
+  .stats .row {
+    display: flex; justify-content: space-between;
+    padding: 3px 0; border-bottom: 1px dashed #26314a;
+  }
+  .stats .row:last-child { border-bottom: none; }
+  .stats .val { font-variant-numeric: tabular-nums; color: var(--text); }
+  .badge {
+    font-size: 11px; padding: 2px 8px; border-radius: 999px;
+    background: #26314a; color: var(--muted);
+  }
+  .badge.car { background: #3a2c12; color: var(--yellow); }
+
+  .bar { width: 100%; height: 8px; background: #121826; border-radius: 4px; overflow: hidden; }
+  .bar > i { display: block; height: 100%; background: var(--accent); width: 0%; transition: .3s; }
+
+  .manual { display: none; gap: 6px; width: 100%; justify-content: center; }
+  body.manual-mode .manual { display: flex; }
+  .manual button {
+    flex: 1; border: none; border-radius: 8px; padding: 8px 0;
+    font-weight: 700; cursor: pointer; font-size: 12px; color: #10131c;
+  }
+  .manual .r { background: var(--red); }
+  .manual .y { background: var(--yellow); }
+  .manual .g { background: var(--green); }
+  .manual button:hover { filter: brightness(1.15); }
+
+  .side {
+    grid-column: 1 / -1;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+  }
+  .panel {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 14px; padding: 16px;
+  }
+  .panel h3 { margin: 0 0 10px; font-size: 14px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .log { max-height: 220px; overflow-y: auto; font-size: 12.5px; }
+  .log div { padding: 4px 0; border-bottom: 1px dashed #26314a; color: var(--muted); }
+  .log div b { color: var(--text); font-weight: 600; }
+  .log .t { color: #5f7093; margin-right: 6px; font-variant-numeric: tabular-nums; }
+  footer { text-align: center; color: #55638260; font-size: 12px; padding: 18px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>SmartTraffic &mdash; Panel de control</h1>
+  <div class="status">
+    <span id="wsDot" class="dot off"></span><span id="wsText">Conectando...</span>
+    <span style="margin-left:10px">ESP32:</span>
+    <span id="espDot" class="dot off"></span><span id="espText">--</span>
+  </div>
+  <div class="modes">
+    <button id="btnAuto" class="btn active">Automatico</button>
+    <button id="btnManual" class="btn">Manual</button>
+  </div>
+</header>
+
+<main id="grid"></main>
+
+<div class="side">
+  <div class="panel">
+    <h3>Resumen</h3>
+    <div class="stats">
+      <div class="row"><span>Vehiculos totales</span><span class="val" id="totalV">0</span></div>
+      <div class="row"><span>Acceso con verde</span><span class="val" id="greenAccess">--</span></div>
+      <div class="row"><span>Modo actual</span><span class="val" id="modeText">--</span></div>
+      <div class="row"><span>Ultimo paquete</span><span class="val" id="lastPkg">--</span></div>
+    </div>
+    <div style="display:flex; gap:8px; margin-top:14px; flex-wrap:wrap">
+      <button id="btnAllRed" class="btn danger" title="Solo en modo manual">Todos en ROJO</button>
+      <button id="btnReset" class="btn">Reiniciar contadores</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>Densidad por acceso (llegadas / min)</h3>
+    <div id="densities"></div>
+  </div>
+
+  <div class="panel">
+    <h3>Eventos recientes</h3>
+    <div class="log" id="log"></div>
+  </div>
+</div>
+
+<footer>Backend local FastAPI + MQTT + SQLite &middot; WebSocket /ws</footer>
+
+<script>
+const ACCESS = ["norte", "sur", "este", "oeste"];
+const grid = document.getElementById("grid");
+const logBox = document.getElementById("log");
+let mode = "auto";
+let lastState = null;
+
+/* ---------- construir tarjetas ---------- */
+function buildCards() {
+  grid.innerHTML = "";
+  ACCESS.forEach(id => {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.id = "card-" + id;
+    card.innerHTML = `
+      <h2 id="name-${id}">${id.toUpperCase()}</h2>
+      <div class="sub" id="status-${id}">--</div>
+      <div class="semaphore">
+        <div class="bulb r" id="b-r-${id}"></div>
+        <div class="bulb y" id="b-y-${id}"></div>
+        <div class="bulb g" id="b-g-${id}"></div>
+      </div>
+      <div class="manual">
+        <button class="r" data-a="${id}" data-c="red">R</button>
+        <button class="y" data-a="${id}" data-c="yellow">A</button>
+        <button class="g" data-a="${id}" data-c="green">V</button>
+      </div>
+      <div class="stats">
+        <div class="row"><span>Distancia</span><span class="val" id="d-${id}">--</span></div>
+        <div class="row"><span>Vehiculos</span><span class="val" id="v-${id}">0</span></div>
+        <div class="row"><span>Llegadas 60s</span><span class="val" id="a-${id}">0</span></div>
+      </div>
+      <div class="bar"><i id="bar-${id}"></i></div>
+    `;
+    grid.appendChild(card);
+  });
+
+  document.querySelectorAll(".manual button").forEach(b => {
+    b.addEventListener("click", () => {
+      post("/api/light", { access: b.dataset.a, color: b.dataset.c });
+    });
+  });
+}
+
+/* ---------- render ---------- */
+function render(s) {
+  lastState = s;
+  mode = s.mode;
+  document.body.classList.toggle("manual-mode", mode === "manual");
+  document.getElementById("btnAuto").classList.toggle("active", mode === "auto");
+  document.getElementById("btnManual").classList.toggle("active", mode === "manual");
+
+  document.getElementById("espDot").className = "dot " + (s.online ? "on" : "off");
+  document.getElementById("espText").textContent = s.online ? "en linea" : "sin telemetria";
+  document.getElementById("modeText").textContent =
+    (mode === "auto" ? "Automatico" : "Manual") +
+    (s.reported_mode && s.reported_mode !== mode ? ` (ESP32: ${s.reported_mode})` : "");
+  document.getElementById("greenAccess").textContent = (s.green || "--").toUpperCase();
+  document.getElementById("totalV").textContent = s.totals ? s.totals.vehicles : 0;
+  document.getElementById("lastPkg").textContent = s.last_telemetry || "--";
+
+  const maxArr = Math.max(1, ...ACCESS.map(a => s.access[a].arrivals_60s));
+
+  ACCESS.forEach(id => {
+    const a = s.access[id];
+    document.getElementById("name-" + id).textContent = a.name.toUpperCase();
+    document.getElementById("b-r-" + id).classList.toggle("on", a.light === "red");
+    document.getElementById("b-y-" + id).classList.toggle("on", a.light === "yellow");
+    document.getElementById("b-g-" + id).classList.toggle("on", a.light === "green");
+    document.getElementById("d-" + id).textContent =
+      a.distance === null || a.distance === undefined ? "sin dato" : a.distance.toFixed(1) + " cm";
+    document.getElementById("v-" + id).textContent = a.vehicles;
+    document.getElementById("a-" + id).textContent = a.arrivals_60s;
+    document.getElementById("bar-" + id).style.width =
+      Math.round(100 * a.arrivals_60s / maxArr) + "%";
+    const st = document.getElementById("status-" + id);
+    st.textContent = a.occupied ? "vehiculo presente" : "libre";
+    st.className = "sub";
+  });
+
+  const d = document.getElementById("densities");
+  d.innerHTML = ACCESS.map(id => {
+    const a = s.access[id];
+    const pct = Math.round(100 * a.arrivals_60s / maxArr);
+    const color = a.light === "green" ? "var(--green)" : a.light === "yellow" ? "var(--yellow)" : "var(--red)";
+    return `
+      <div class="row" style="display:flex; align-items:center; gap:8px; padding:6px 0">
+        <span style="width:60px; color:${color}; font-weight:700">${a.name}</span>
+        <div class="bar" style="flex:1"><i style="width:${pct}%"></i></div>
+        <span class="val" style="width:40px; text-align:right">${a.arrivals_60s}</span>
+      </div>`;
+  }).join("");
+}
+
+function addLog(entry) {
+  const div = document.createElement("div");
+  const tag = entry.access ? `<b>${String(entry.access).toUpperCase()}</b> ` : "";
+  div.innerHTML = `<span class="t">${(entry.ts || "").slice(11, 19) || "--:--:--"}</span>${tag}${entry.detail || entry.kind || ""}`;
+  logBox.prepend(div);
+  while (logBox.children.length > 60) logBox.removeChild(logBox.lastChild);
+}
+
+/* ---------- acciones ---------- */
+async function post(url, body) {
+  try {
+    const r = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+    if (!r.ok) {
+      const e = await r.json().catch(() => ({}));
+      alert(e.detail || ("Error " + r.status));
+    }
+  } catch (err) {
+    alert("No se pudo contactar al servidor: " + err);
+  }
+}
+
+document.getElementById("btnAuto").onclick = () => post("/api/mode", { mode: "auto" });
+document.getElementById("btnManual").onclick = () => post("/api/mode", { mode: "manual" });
+document.getElementById("btnAllRed").onclick = () => post("/api/all-red", {});
+document.getElementById("btnReset").onclick = () => post("/api/reset", {});
+
+/* ---------- WebSocket ---------- */
+let ws;
+function connect() {
+  const proto = location.protocol === "https:" ? "wss" : "ws";
+  ws = new WebSocket(`${proto}://${location.host}/ws`);
+
+  ws.onopen = () => {
+    document.getElementById("wsDot").className = "dot on";
+    document.getElementById("wsText").textContent = "Servidor conectado";
+  };
+  ws.onmessage = (ev) => {
+    let msg;
+    try { msg = JSON.parse(ev.data); } catch { return; }
+    if (msg.type === "state") render(msg);
+    else if (msg.type === "event") addLog(msg);
+  };
+  ws.onclose = () => {
+    document.getElementById("wsDot").className = "dot off";
+    document.getElementById("wsText").textContent = "Reconectando...";
+    setTimeout(connect, 2000);
+  };
+  ws.onerror = () => ws.close();
+}
+setInterval(() => { if (ws && ws.readyState === 1) ws.send("ping"); }, 15000);
+
+/* ---------- arranque ---------- */
+buildCards();
+connect();
+fetch("/api/events?limit=30")
+  .then(r => r.json())
+  .then(d => (d.events || []).slice().reverse().forEach(addLog))
+  .catch(() => {});
+</script>
+</body>
+</html>

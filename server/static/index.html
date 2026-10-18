@@ -1,332 +1,1866 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>SmartTraffic - Dashboard</title>
-<style>
-  :root {
-    --bg: #0f1420;
-    --panel: #1a2233;
-    --panel-2: #222c42;
-    --text: #e8eefc;
-    --muted: #8fa0c0;
-    --red: #ff3b3b;
-    --yellow: #ffc233;
-    --green: #2ee06a;
-    --accent: #4d8dff;
-    --border: #2c3853;
-  }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    font-family: "Segoe UI", system-ui, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-  }
-  header {
-    display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
-    justify-content: space-between;
-    padding: 14px 20px;
-    background: var(--panel);
-    border-bottom: 1px solid var(--border);
-    position: sticky; top: 0; z-index: 5;
-  }
-  h1 { font-size: 18px; margin: 0; letter-spacing: .5px; }
-  .status { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
-  .dot { width: 10px; height: 10px; border-radius: 50%; background: #666; }
-  .dot.on { background: var(--green); box-shadow: 0 0 8px var(--green); }
-  .dot.off { background: var(--red); }
-  .btn {
-    background: var(--panel-2); color: var(--text);
-    border: 1px solid var(--border); border-radius: 8px;
-    padding: 8px 14px; font-size: 13px; cursor: pointer;
-    transition: .15s;
-  }
-  .btn:hover { border-color: var(--accent); }
-  .btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
-  .btn.danger { border-color: #7a2b2b; color: #ff8f8f; }
-  .btn.danger:hover { background: #3a1a1a; }
-  .modes { display: flex; gap: 8px; }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SmartTraffic &bull; Centro de Control Vial Inteligente</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      /* Paleta Principal: Blanco, Negro, Azul y Amarillo */
+      --bg-body: #f8fafc;
+      --bg-surface: #ffffff;
+      --bg-surface-alt: #f1f5f9;
+      --bg-surface-elevated: #ffffff;
+      
+      --text-main: #0f172a;       /* Negro azabache / Slate 900 */
+      --text-body: #334155;       /* Gris carbón / Slate 700 */
+      --text-muted: #64748b;      /* Slate 500 */
+      --text-light: #94a3b8;      /* Slate 400 */
+      
+      /* Azul Tecnológico y Corporativo */
+      --blue-primary: #1d4ed8;    /* Royal Blue 700 */
+      --blue-accent: #2563eb;     /* Blue 600 */
+      --blue-hover: #1e40af;      /* Blue 800 */
+      --blue-light: #eff6ff;      /* Blue 50 */
+      --blue-border: #bfdbfe;     /* Blue 200 */
+      
+      /* Amarillo / Ámbar Vial */
+      --yellow-primary: #d97706;  /* Amber 600 */
+      --yellow-accent: #f59e0b;   /* Amber 500 */
+      --yellow-light: #fef3c7;    /* Amber 100 */
+      --yellow-border: #fde68a;   /* Amber 200 */
+      --yellow-glow: rgba(245, 158, 11, 0.45);
+      
+      /* Semáforo reglamentario */
+      --light-red: #ef4444;
+      --light-red-glow: rgba(239, 68, 68, 0.6);
+      --light-yellow: #f59e0b;
+      --light-yellow-glow: rgba(245, 158, 11, 0.6);
+      --light-green: #10b981;
+      --light-green-glow: rgba(16, 185, 129, 0.6);
+      
+      /* Bordes y Sombras */
+      --border-subtle: #e2e8f0;
+      --border-medium: #cbd5e1;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.06), 0 2px 4px -2px rgba(15, 23, 42, 0.04);
+      --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.04);
+      --shadow-card: 0 2px 8px -2px rgba(15, 23, 42, 0.05), 0 0 0 1px rgba(15, 23, 42, 0.06);
+      
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 20px;
+    }
 
-  main {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 16px;
-    padding: 20px;
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-  .card {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 16px;
-    display: flex; flex-direction: column; align-items: center; gap: 10px;
-  }
-  .card h2 { margin: 0; font-size: 16px; }
-  .card .sub { font-size: 12px; color: var(--muted); }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-  .semaphore {
-    background: #0b0f18; border: 1px solid var(--border);
-    border-radius: 12px; padding: 12px 14px;
-    display: flex; flex-direction: column; gap: 10px; align-items: center;
-  }
-  .bulb {
-    width: 40px; height: 40px; border-radius: 50%;
-    background: #161c2a; border: 2px solid #0b0f18;
-    transition: .2s;
-  }
-  .bulb.r.on { background: var(--red);    box-shadow: 0 0 18px var(--red); }
-  .bulb.y.on { background: var(--yellow); box-shadow: 0 0 18px var(--yellow); }
-  .bulb.g.on { background: var(--green);  box-shadow: 0 0 18px var(--green); }
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg-body);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
 
-  .stats { width: 100%; font-size: 13px; }
-  .stats .row {
-    display: flex; justify-content: space-between;
-    padding: 3px 0; border-bottom: 1px dashed #26314a;
-  }
-  .stats .row:last-child { border-bottom: none; }
-  .stats .val { font-variant-numeric: tabular-nums; color: var(--text); }
-  .badge {
-    font-size: 11px; padding: 2px 8px; border-radius: 999px;
-    background: #26314a; color: var(--muted);
-  }
-  .badge.car { background: #3a2c12; color: var(--yellow); }
+    /* Top decorative brand stripe (Blue + Yellow) */
+    .top-accent-line {
+      height: 4px;
+      background: linear-gradient(90deg, var(--blue-primary) 0%, var(--blue-accent) 45%, var(--yellow-accent) 75%, var(--yellow-primary) 100%);
+      width: 100%;
+    }
 
-  .bar { width: 100%; height: 8px; background: #121826; border-radius: 4px; overflow: hidden; }
-  .bar > i { display: block; height: 100%; background: var(--accent); width: 0%; transition: .3s; }
+    /* ==========================================================================
+       HEADER & NAVIGATION
+       ========================================================================== */
+    header {
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border-subtle);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-shadow: var(--shadow-sm);
+    }
 
-  .manual { display: none; gap: 6px; width: 100%; justify-content: center; }
-  body.manual-mode .manual { display: flex; }
-  .manual button {
-    flex: 1; border: none; border-radius: 8px; padding: 8px 0;
-    font-weight: 700; cursor: pointer; font-size: 12px; color: #10131c;
-  }
-  .manual .r { background: var(--red); }
-  .manual .y { background: var(--yellow); }
-  .manual .g { background: var(--green); }
-  .manual button:hover { filter: brightness(1.15); }
+    .header-inner {
+      max-width: 1360px;
+      margin: 0 auto;
+      padding: 12px 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: center;
+      justify-content: space-between;
+    }
 
-  .side {
-    grid-column: 1 / -1;
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 16px;
-  }
-  .panel {
-    background: var(--panel); border: 1px solid var(--border);
-    border-radius: 14px; padding: 16px;
-  }
-  .panel h3 { margin: 0 0 10px; font-size: 14px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
-  .log { max-height: 220px; overflow-y: auto; font-size: 12.5px; }
-  .log div { padding: 4px 0; border-bottom: 1px dashed #26314a; color: var(--muted); }
-  .log div b { color: var(--text); font-weight: 600; }
-  .log .t { color: #5f7093; margin-right: 6px; font-variant-numeric: tabular-nums; }
-  footer { text-align: center; color: #55638260; font-size: 12px; padding: 18px; }
-</style>
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-icon {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, var(--blue-primary), var(--blue-accent));
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
+      border: 2px solid #ffffff;
+      flex-shrink: 0;
+    }
+
+    .brand-info h1 {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--text-main);
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-badge {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 2px 7px;
+      border-radius: 9999px;
+      background: var(--yellow-light);
+      color: var(--yellow-primary);
+      border: 1px solid var(--yellow-border);
+    }
+
+    .brand-sub {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    /* Indicadores de telemetría y conexión */
+    .telemetry-status {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--bg-surface-alt);
+      padding: 6px 14px;
+      border-radius: 9999px;
+      border: 1px solid var(--border-subtle);
+      font-size: 0.8rem;
+    }
+
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 600;
+      color: var(--text-body);
+    }
+
+    .status-divider {
+      width: 1px;
+      height: 14px;
+      background: var(--border-medium);
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #94a3b8;
+      display: inline-block;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .dot.on {
+      background: #10b981;
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+    }
+
+    .dot.on::after {
+      content: "";
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: inherit;
+      animation: pulse-ring 2s infinite ease-out;
+    }
+
+    .dot.off {
+      background: var(--light-red);
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+    }
+
+    @keyframes pulse-ring {
+      0% { transform: scale(1); opacity: 0.8; }
+      100% { transform: scale(2.6); opacity: 0; }
+    }
+
+    /* Switch de modo Automático / Manual */
+    .mode-switch-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .segmented-control {
+      background: var(--bg-surface-alt);
+      padding: 4px;
+      border-radius: var(--radius-md);
+      display: flex;
+      border: 1px solid var(--border-subtle);
+    }
+
+    .btn-mode {
+      border: none;
+      background: transparent;
+      padding: 7px 16px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .btn-mode:hover {
+      color: var(--text-main);
+    }
+
+    .btn-mode.active {
+      background: var(--blue-primary);
+      color: #ffffff;
+      box-shadow: 0 2px 6px rgba(29, 78, 216, 0.3);
+    }
+
+    /* Banner de advertencia en modo manual */
+    .manual-alert-banner {
+      display: none;
+      background: linear-gradient(90deg, #fffbeb, #fef3c7);
+      border-bottom: 1px solid var(--yellow-border);
+      color: #92400e;
+      padding: 8px 20px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    body.manual-mode .manual-alert-banner {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    /* ==========================================================================
+       MAIN CONTAINER & LAYOUT
+       ========================================================================== */
+    .dashboard-container {
+      max-width: 1360px;
+      margin: 0 auto;
+      padding: 24px 20px 40px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      flex: 1;
+    }
+
+    /* ==========================================================================
+       EXECUTIVE SUMMARY / KPI CARDS (Blanco + Azul + Amarillo)
+       ========================================================================== */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+    }
+
+    .kpi-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 18px 20px;
+      box-shadow: var(--shadow-card);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .kpi-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+      border-color: var(--border-medium);
+    }
+
+    .kpi-card::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      background: var(--border-subtle);
+    }
+
+    .kpi-card.blue::before { background: var(--blue-accent); }
+    .kpi-card.yellow::before { background: var(--yellow-accent); }
+    .kpi-card.green::before { background: var(--light-green); }
+    .kpi-card.slate::before { background: var(--text-muted); }
+
+    .kpi-icon-wrap {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .kpi-card.blue .kpi-icon-wrap { background: var(--blue-light); color: var(--blue-primary); }
+    .kpi-card.yellow .kpi-icon-wrap { background: var(--yellow-light); color: var(--yellow-primary); }
+    .kpi-card.green .kpi-icon-wrap { background: #ecfdf5; color: var(--light-green); }
+    .kpi-card.slate .kpi-icon-wrap { background: var(--bg-surface-alt); color: var(--text-muted); }
+
+    .kpi-body {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .kpi-label {
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .kpi-value {
+      font-size: 1.55rem;
+      font-weight: 800;
+      color: var(--text-main);
+      line-height: 1.2;
+      font-family: 'JetBrains Mono', monospace;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .kpi-sub {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+      font-weight: 500;
+    }
+
+    /* ==========================================================================
+       INTERSECTION 2D VISUALIZER & DUAL LAYOUT
+       ========================================================================== */
+    .overview-section {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 20px;
+      align-items: stretch;
+    }
+
+    @media (max-width: 1024px) {
+      .overview-section {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .intersection-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-xl);
+      padding: 20px;
+      box-shadow: var(--shadow-card);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .intersection-title {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .intersection-title h3 {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .intersection-badge {
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 9999px;
+      background: var(--blue-light);
+      color: var(--blue-primary);
+      border: 1px solid var(--blue-border);
+    }
+
+    /* Visualización esquemática vial 2D */
+    .intersection-map {
+      width: 280px;
+      height: 280px;
+      background: #0f172a;
+      border-radius: var(--radius-lg);
+      position: relative;
+      box-shadow: inset 0 2px 8px rgba(0,0,0,0.4), 0 4px 12px rgba(15, 23, 42, 0.1);
+      overflow: hidden;
+      border: 2px solid var(--border-medium);
+    }
+
+    /* Carreteras asfaltadas */
+    .road-v {
+      position: absolute;
+      left: 95px;
+      top: 0;
+      bottom: 0;
+      width: 90px;
+      background: #1e293b;
+      border-left: 2px solid #475569;
+      border-right: 2px solid #475569;
+    }
+
+    .road-h {
+      position: absolute;
+      top: 95px;
+      left: 0;
+      right: 0;
+      height: 90px;
+      background: #1e293b;
+      border-top: 2px solid #475569;
+      border-bottom: 2px solid #475569;
+    }
+
+    /* Líneas amarillas de tráfico discontinuas */
+    .lane-div-v {
+      position: absolute;
+      left: 139px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      border-left: 2px dashed #f59e0b;
+      z-index: 2;
+    }
+
+    .lane-div-h {
+      position: absolute;
+      top: 139px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      border-top: 2px dashed #f59e0b;
+      z-index: 2;
+    }
+
+    .cross-center {
+      position: absolute;
+      top: 95px;
+      left: 95px;
+      width: 90px;
+      height: 90px;
+      background: #1e293b;
+      z-index: 3;
+    }
+
+    /* Semáforos en miniatura de la intersección */
+    .map-light {
+      position: absolute;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 6px;
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid #334155;
+      border-radius: 9999px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+    }
+
+    .map-light-bulb {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #334155;
+      transition: all 0.2s ease;
+    }
+
+    .map-light-label {
+      font-size: 0.65rem;
+      font-weight: 800;
+      color: #94a3b8;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .map-light.pos-norte { top: 6px; left: 100px; }
+    .map-light.pos-sur { bottom: 6px; left: 100px; }
+    .map-light.pos-este { right: 6px; top: 100px; flex-direction: row-reverse; }
+    .map-light.pos-oeste { left: 6px; top: 100px; }
+
+    /* Indicador de vehículos en la simulación */
+    .car-marker {
+      position: absolute;
+      z-index: 8;
+      width: 18px;
+      height: 24px;
+      border-radius: 4px;
+      background: #f59e0b;
+      border: 2px solid #ffffff;
+      box-shadow: 0 0 10px rgba(245, 158, 11, 0.8);
+      display: none;
+      transition: all 0.3s ease;
+    }
+
+    .car-marker.active {
+      display: block;
+      animation: car-pulse 1.2s infinite alternate;
+    }
+
+    .car-marker.pos-norte { top: 45px; left: 147px; width: 16px; height: 24px; }
+    .car-marker.pos-sur { bottom: 45px; left: 117px; width: 16px; height: 24px; }
+    .car-marker.pos-este { right: 45px; top: 147px; width: 24px; height: 16px; }
+    .car-marker.pos-oeste { left: 45px; top: 117px; width: 24px; height: 16px; }
+
+    @keyframes car-pulse {
+      0% { transform: scale(1); filter: brightness(1); }
+      100% { transform: scale(1.15); filter: brightness(1.25); }
+    }
+
+    /* ==========================================================================
+       CARDS DE LOS 4 ACCESOS (Norte, Sur, Este, Oeste)
+       ========================================================================== */
+    .access-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      flex: 1;
+    }
+
+    .access-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-xl);
+      padding: 18px;
+      box-shadow: var(--shadow-card);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      position: relative;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .access-card:hover {
+      border-color: var(--blue-border);
+      box-shadow: var(--shadow-md);
+    }
+
+    .access-card.has-green {
+      border-color: #86efac;
+      box-shadow: 0 4px 12px -2px rgba(16, 185, 129, 0.15), 0 0 0 1px #86efac;
+    }
+
+    .access-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 10px;
+    }
+
+    .access-name-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .access-name-badge {
+      width: 28px;
+      height: 28px;
+      border-radius: var(--radius-sm);
+      background: var(--blue-light);
+      color: var(--blue-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.78rem;
+    }
+
+    .access-card h2 {
+      font-size: 1.02rem;
+      font-weight: 800;
+      color: var(--text-main);
+      letter-spacing: -0.01em;
+    }
+
+    .vehicle-status-pill {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 9999px;
+      background: var(--bg-surface-alt);
+      color: var(--text-muted);
+      border: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s ease;
+    }
+
+    .vehicle-status-pill.occupied {
+      background: var(--yellow-light);
+      color: var(--yellow-primary);
+      border-color: var(--yellow-border);
+    }
+
+    /* SEMÁFORO REALISTA CON ACABADO NEGRO MATE */
+    .semaphore-container {
+      display: flex;
+      justify-content: center;
+      padding: 6px 0;
+    }
+
+    .semaphore-body {
+      background: linear-gradient(180deg, #1e293b, #0f172a);
+      border: 2px solid #334155;
+      border-radius: 20px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-items: center;
+      box-shadow: 0 8px 16px -2px rgba(15, 23, 42, 0.3), inset 0 2px 4px rgba(255,255,255,0.1);
+      position: relative;
+    }
+
+    /* Visera superior de sombra */
+    .semaphore-body::before {
+      content: "";
+      position: absolute;
+      top: -4px;
+      left: 18px;
+      right: 18px;
+      height: 4px;
+      background: #0f172a;
+      border-radius: 4px 4px 0 0;
+    }
+
+    .bulb-visor {
+      position: relative;
+    }
+
+    .bulb-visor::before {
+      content: "";
+      position: absolute;
+      top: -3px;
+      left: 3px;
+      right: 3px;
+      height: 5px;
+      background: #334155;
+      border-radius: 10px 10px 0 0;
+      z-index: 2;
+    }
+
+    .bulb {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: #182234;
+      border: 3px solid #0b1120;
+      position: relative;
+      box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.6);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Textura de lente fresnel */
+    .bulb::after {
+      content: "";
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      right: 4px;
+      bottom: 4px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, rgba(255,255,255,0.15) 0%, transparent 60%);
+      opacity: 0.4;
+    }
+
+    /* Estados encendidos de los focos con brillo vibrante */
+    .bulb.r.on {
+      background: radial-gradient(circle at 40% 40%, #ff6b6b 0%, var(--light-red) 70%, #991b1b 100%);
+      box-shadow: 0 0 24px var(--light-red-glow), 0 0 8px #ffffff inset;
+      border-color: #fca5a5;
+    }
+
+    .bulb.y.on {
+      background: radial-gradient(circle at 40% 40%, #fef08a 0%, var(--light-yellow) 70%, #b45309 100%);
+      box-shadow: 0 0 24px var(--light-yellow-glow), 0 0 8px #ffffff inset;
+      border-color: #fde047;
+    }
+
+    .bulb.g.on {
+      background: radial-gradient(circle at 40% 40%, #6ee7b7 0%, var(--light-green) 70%, #065f46 100%);
+      box-shadow: 0 0 24px var(--light-green-glow), 0 0 8px #ffffff inset;
+      border-color: #86efac;
+    }
+
+    /* Botones de control en modo manual */
+    .manual-controls-panel {
+      display: none;
+      gap: 6px;
+      width: 100%;
+      background: var(--bg-surface-alt);
+      padding: 6px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-subtle);
+    }
+
+    body.manual-mode .manual-controls-panel {
+      display: flex;
+    }
+
+    .btn-manual-light {
+      flex: 1;
+      border: 1px solid transparent;
+      border-radius: var(--radius-sm);
+      padding: 7px 0;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 0.76rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      transition: all 0.15s ease;
+    }
+
+    .btn-manual-light.r {
+      background: #fee2e2;
+      color: #b91c1c;
+      border-color: #fecaca;
+    }
+    .btn-manual-light.r:hover {
+      background: var(--light-red);
+      color: #ffffff;
+    }
+
+    .btn-manual-light.y {
+      background: var(--yellow-light);
+      color: #b45309;
+      border-color: var(--yellow-border);
+    }
+    .btn-manual-light.y:hover {
+      background: var(--yellow-accent);
+      color: #ffffff;
+    }
+
+    .btn-manual-light.g {
+      background: #d1fae5;
+      color: #047857;
+      border-color: #a7f3d0;
+    }
+    .btn-manual-light.g:hover {
+      background: var(--light-green);
+      color: #ffffff;
+    }
+
+    /* Estadísticas y métricas dentro de cada tarjeta */
+    .access-stats {
+      width: 100%;
+      font-size: 0.8rem;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      background: var(--bg-surface-alt);
+      padding: 10px 12px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .stat-label {
+      color: var(--text-muted);
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .stat-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    /* Barra medidora de densidad vial */
+    .density-bar-track {
+      width: 100%;
+      height: 7px;
+      background: #e2e8f0;
+      border-radius: 9999px;
+      overflow: hidden;
+      margin-top: 2px;
+    }
+
+    .density-bar-fill {
+      display: block;
+      height: 100%;
+      background: linear-gradient(90deg, var(--blue-accent), var(--yellow-accent));
+      width: 0%;
+      border-radius: 9999px;
+      transition: width 0.4s ease;
+    }
+
+    /* ==========================================================================
+       PANEL INFERIOR: RESUMEN, DENSIDAD Y LOG DE AUDITORÍA
+       ========================================================================== */
+    .bottom-analytics-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 900px) {
+      .bottom-analytics-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .panel-box {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-xl);
+      padding: 20px;
+      box-shadow: var(--shadow-card);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .panel-box-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 12px;
+    }
+
+    .panel-box-header h3 {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Lista comparativa de densidad */
+    .density-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .density-item {
+      display: grid;
+      grid-template-columns: 80px 1fr 50px;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.82rem;
+    }
+
+    .density-name {
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .density-meter-bg {
+      height: 10px;
+      background: var(--bg-surface-alt);
+      border: 1px solid var(--border-subtle);
+      border-radius: 9999px;
+      overflow: hidden;
+    }
+
+    .density-meter-bar {
+      height: 100%;
+      background: var(--blue-accent);
+      border-radius: 9999px;
+      transition: width 0.3s ease;
+    }
+
+    .density-num {
+      text-align: right;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    /* Botonera de acciones rápidas */
+    .actions-toolbar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .btn-action {
+      background: var(--bg-surface-alt);
+      color: var(--text-body);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 9px 16px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-action:hover {
+      background: #ffffff;
+      border-color: var(--blue-accent);
+      color: var(--blue-primary);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn-action.btn-danger {
+      background: #fff1f2;
+      border-color: #fecdd3;
+      color: #be123c;
+    }
+
+    .btn-action.btn-danger:hover {
+      background: var(--light-red);
+      color: #ffffff;
+      border-color: var(--light-red);
+      box-shadow: 0 4px 10px rgba(239, 68, 68, 0.25);
+    }
+
+    /* Consola / Registro de eventos en vivo */
+    .log-container {
+      max-height: 240px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 0.8rem;
+      padding-right: 4px;
+    }
+
+    .log-container::-webkit-scrollbar {
+      width: 5px;
+    }
+
+    .log-container::-webkit-scrollbar-thumb {
+      background: var(--border-medium);
+      border-radius: 9999px;
+    }
+
+    .log-item {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: var(--radius-sm);
+      background: var(--bg-surface-alt);
+      border-left: 3px solid var(--blue-accent);
+      color: var(--text-body);
+      animation: fadeIn 0.25s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .log-time {
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text-muted);
+      font-size: 0.74rem;
+      flex-shrink: 0;
+    }
+
+    .log-badge {
+      font-weight: 800;
+      font-size: 0.7rem;
+      padding: 1px 6px;
+      border-radius: 4px;
+      background: var(--blue-light);
+      color: var(--blue-primary);
+      text-transform: uppercase;
+      flex-shrink: 0;
+    }
+
+    .log-msg {
+      flex: 1;
+      word-break: break-word;
+    }
+
+    /* ==========================================================================
+       TOAST NOTIFICATIONS SYSTEM
+       ========================================================================== */
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 9999;
+      pointer-events: none;
+    }
+
+    .toast {
+      pointer-events: auto;
+      background: #ffffff;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 12px 18px;
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.84rem;
+      font-weight: 600;
+      color: var(--text-main);
+      min-width: 280px;
+      max-width: 400px;
+      border-left: 4px solid var(--blue-accent);
+      animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: all 0.2s ease;
+    }
+
+    .toast.success { border-left-color: var(--light-green); }
+    .toast.warning { border-left-color: var(--yellow-accent); }
+    .toast.error { border-left-color: var(--light-red); }
+
+    @keyframes slideInRight {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    /* ==========================================================================
+       MODAL DE CONFIRMACIÓN
+       ========================================================================== */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.5);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-backdrop.show {
+      display: flex;
+    }
+
+    .modal-dialog {
+      background: #ffffff;
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border-subtle);
+      box-shadow: var(--shadow-lg);
+      max-width: 420px;
+      width: 100%;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .modal-title {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .modal-desc {
+      font-size: 0.88rem;
+      color: var(--text-body);
+      line-height: 1.5;
+    }
+
+    .modal-buttons {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    /* ==========================================================================
+       FOOTER
+       ========================================================================== */
+    footer {
+      background: var(--bg-surface);
+      border-top: 1px solid var(--border-subtle);
+      padding: 16px 20px;
+      margin-top: auto;
+      text-align: center;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .footer-inner {
+      max-width: 1360px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    /* ==========================================================================
+       MEDIA QUERIES (RESPONSIVE)
+       ========================================================================== */
+    @media (max-width: 768px) {
+      .header-inner {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .telemetry-status {
+        justify-content: center;
+      }
+      .segmented-control {
+        width: 100%;
+      }
+      .btn-mode {
+        flex: 1;
+        justify-content: center;
+      }
+      .overview-section {
+        grid-template-columns: 1fr;
+      }
+      .intersection-card {
+        order: -1;
+      }
+      .footer-inner {
+        flex-direction: column;
+        text-align: center;
+      }
+    }
+  </style>
 </head>
 <body>
 
-<header>
-  <h1>SmartTraffic &mdash; Panel de control</h1>
-  <div class="status">
-    <span id="wsDot" class="dot off"></span><span id="wsText">Conectando...</span>
-    <span style="margin-left:10px">ESP32:</span>
-    <span id="espDot" class="dot off"></span><span id="espText">--</span>
-  </div>
-  <div class="modes">
-    <button id="btnAuto" class="btn active">Automatico</button>
-    <button id="btnManual" class="btn">Manual</button>
-  </div>
-</header>
+  <!-- Línea decorativa superior Azul y Amarillo -->
+  <div class="top-accent-line"></div>
 
-<main id="grid"></main>
+  <!-- HEADER -->
+  <header>
+    <div class="header-inner">
+      <div class="brand-group">
+        <div class="brand-icon">
+          <!-- SVG Icon Semáforo Vial -->
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="6" y="2" width="12" height="20" rx="6"></rect>
+            <circle cx="12" cy="7" r="2" fill="#ef4444" stroke="none"></circle>
+            <circle cx="12" cy="12" r="2" fill="#f59e0b" stroke="none"></circle>
+            <circle cx="12" cy="17" r="2" fill="#10b981" stroke="none"></circle>
+          </svg>
+        </div>
+        <div class="brand-info">
+          <h1>
+            SmartTraffic
+            <span class="brand-badge">IoT Core</span>
+          </h1>
+          <div class="brand-sub">Centro de Control de Tráfico Inteligente</div>
+        </div>
+      </div>
 
-<div class="side">
-  <div class="panel">
-    <h3>Resumen</h3>
-    <div class="stats">
-      <div class="row"><span>Vehiculos totales</span><span class="val" id="totalV">0</span></div>
-      <div class="row"><span>Acceso con verde</span><span class="val" id="greenAccess">--</span></div>
-      <div class="row"><span>Modo actual</span><span class="val" id="modeText">--</span></div>
-      <div class="row"><span>Ultimo paquete</span><span class="val" id="lastPkg">--</span></div>
+      <!-- Estado de Enlace: Servidor WebSocket y ESP32 -->
+      <div class="telemetry-status">
+        <div class="status-item" title="Conexión WebSocket al servidor FastAPI">
+          <span id="wsDot" class="dot off"></span>
+          <span id="wsText">Conectando...</span>
+        </div>
+        <div class="status-divider"></div>
+        <div class="status-item" title="Estado de telemetría MQTT del ESP32">
+          <span>ESP32:</span>
+          <span id="espDot" class="dot off"></span>
+          <span id="espText">--</span>
+        </div>
+      </div>
+
+      <!-- Selector de Modo: Automático vs Manual -->
+      <div class="mode-switch-wrapper">
+        <div class="segmented-control">
+          <button id="btnAuto" class="btn-mode active" title="Ciclo inteligente adaptativo según densidad">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+            Automático
+          </button>
+          <button id="btnManual" class="btn-mode" title="Control manual operador de luces de semáforo">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8"></polygon></svg>
+            Manual
+          </button>
+        </div>
+      </div>
     </div>
-    <div style="display:flex; gap:8px; margin-top:14px; flex-wrap:wrap">
-      <button id="btnAllRed" class="btn danger" title="Solo en modo manual">Todos en ROJO</button>
-      <button id="btnReset" class="btn">Reiniciar contadores</button>
+  </header>
+
+  <!-- Banner de Advertencia de Modo Manual -->
+  <div class="manual-alert-banner">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+    <span>MODO MANUAL ACTIVO: La alternancia automática está en pausa. Puedes presionar los botones [Rojo], [Ámbar], [Verde] en cada acceso.</span>
+  </div>
+
+  <!-- DASHBOARD PRINCIPAL -->
+  <div class="dashboard-container">
+
+    <!-- KPI CARDS EJECUTIVAS -->
+    <section class="kpi-grid">
+      <!-- Total Vehículos -->
+      <div class="kpi-card blue">
+        <div class="kpi-icon-wrap">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="8" rx="2"></rect>
+            <path d="M5 11l2-5h10l2 5"></path>
+            <circle cx="7" cy="15" r="1.5"></circle>
+            <circle cx="17" cy="15" r="1.5"></circle>
+          </svg>
+        </div>
+        <div class="kpi-body">
+          <div class="kpi-label">Vehículos Totales</div>
+          <div class="kpi-value" id="totalV">0</div>
+          <div class="kpi-sub">Detectados en la sesión</div>
+        </div>
+      </div>
+
+      <!-- Acceso con Verde -->
+      <div class="kpi-card green">
+        <div class="kpi-icon-wrap">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        </div>
+        <div class="kpi-body">
+          <div class="kpi-label">Paso Habilitado</div>
+          <div class="kpi-value" id="greenAccess" style="color: var(--light-green);">--</div>
+          <div class="kpi-sub">Acceso con luz verde</div>
+        </div>
+      </div>
+
+      <!-- Modo de Operación -->
+      <div class="kpi-card yellow">
+        <div class="kpi-icon-wrap">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+        </div>
+        <div class="kpi-body">
+          <div class="kpi-label">Modo Actual</div>
+          <div class="kpi-value" id="modeText">--</div>
+          <div class="kpi-sub">Lógica de semáforos</div>
+        </div>
+      </div>
+
+      <!-- Última Telemetría -->
+      <div class="kpi-card slate">
+        <div class="kpi-icon-wrap">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+        </div>
+        <div class="kpi-body">
+          <div class="kpi-label">Último Paquete</div>
+          <div class="kpi-value" id="lastPkg" style="font-size: 1.15rem;">--</div>
+          <div class="kpi-sub">Sincronización MQTT</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VISTA PRINCIPAL: CROQUIS 2D DE LA INTERSECCIÓN + TARJETAS DE ACCESOS -->
+    <div class="overview-section">
+      
+      <!-- Visualizador 2D de la Intersección Vial -->
+      <div class="intersection-card">
+        <div class="intersection-title">
+          <h3>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="2" x2="12" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line></svg>
+            Cruce en Vivo
+          </h3>
+          <span class="intersection-badge">Topología 4 Vías</span>
+        </div>
+
+        <div class="intersection-map">
+          <!-- Calles Viales -->
+          <div class="road-v"></div>
+          <div class="road-h"></div>
+          <div class="lane-div-v"></div>
+          <div class="lane-div-h"></div>
+          <div class="cross-center"></div>
+
+          <!-- Semáforos Miniatura por acceso -->
+          <div class="map-light pos-norte">
+            <span class="map-light-bulb" id="map-bulb-norte"></span>
+            <span class="map-light-label">N</span>
+          </div>
+          <div class="map-light pos-sur">
+            <span class="map-light-bulb" id="map-bulb-sur"></span>
+            <span class="map-light-label">S</span>
+          </div>
+          <div class="map-light pos-este">
+            <span class="map-light-bulb" id="map-bulb-este"></span>
+            <span class="map-light-label">E</span>
+          </div>
+          <div class="map-light pos-oeste">
+            <span class="map-light-bulb" id="map-bulb-oeste"></span>
+            <span class="map-light-label">O</span>
+          </div>
+
+          <!-- Carritos / Marcadores de detección en la simulación -->
+          <div class="car-marker pos-norte" id="map-car-norte" title="Vehículo detectado en Norte"></div>
+          <div class="car-marker pos-sur" id="map-car-sur" title="Vehículo detectado en Sur"></div>
+          <div class="car-marker pos-este" id="map-car-este" title="Vehículo detectado en Este"></div>
+          <div class="car-marker pos-oeste" id="map-car-oeste" title="Vehículo detectado en Oeste"></div>
+        </div>
+
+        <div style="font-size: 0.74rem; color: var(--text-muted); text-align: center; margin-top: 14px;">
+          Líneas amarillas de carril y luces sincronizadas en tiempo real.
+        </div>
+      </div>
+
+      <!-- Tarjetas de los 4 accesos: Norte, Sur, Este, Oeste -->
+      <div class="access-grid" id="grid">
+        <!-- Renderizado dinámico vía buildCards() -->
+      </div>
+    </div>
+
+    <!-- PANELES DE DENSIDAD VIAL Y EVENTOS EN VIVO -->
+    <div class="bottom-analytics-grid">
+      
+      <!-- Panel de Densidad por Acceso & Acciones Rápidas -->
+      <div class="panel-box">
+        <div class="panel-box-header">
+          <h3>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+            Densidad de Tráfico (Llegadas / 60s)
+          </h3>
+          <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">Ventana Móvil</span>
+        </div>
+
+        <!-- Barras de densidad comparativa -->
+        <div class="density-list" id="densities">
+          <!-- Renderizado dinámico -->
+        </div>
+
+        <!-- Acciones rápidas de seguridad -->
+        <div style="border-top: 1px solid var(--border-subtle); padding-top: 14px; margin-top: 4px;">
+          <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;">
+            Acciones Rápidas del Operador
+          </div>
+          <div class="actions-toolbar">
+            <button id="btnAllRed" class="btn-action btn-danger" title="Solo disponible en modo manual">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+              Todos en ROJO
+            </button>
+            <button id="btnReset" class="btn-action">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path></svg>
+              Reiniciar Contadores
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel de Registro de Eventos (Live Log) -->
+      <div class="panel-box">
+        <div class="panel-box-header">
+          <h3>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            Registro de Auditoría y Eventos
+          </h3>
+          <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">En Vivo</span>
+        </div>
+
+        <div class="log-container" id="log">
+          <!-- Renderizado dinámico de logs -->
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- MODAL DE CONFIRMACIÓN ELEGANTE -->
+  <div class="modal-backdrop" id="confirmModal">
+    <div class="modal-dialog">
+      <div class="modal-title" id="modalTitle">Confirmar Acción</div>
+      <div class="modal-desc" id="modalDesc">¿Estás seguro de que deseas ejecutar esta operación?</div>
+      <div class="modal-buttons">
+        <button class="btn-action" id="modalCancel">Cancelar</button>
+        <button class="btn-action btn-danger" id="modalConfirm">Continuar</button>
+      </div>
     </div>
   </div>
 
-  <div class="panel">
-    <h3>Densidad por acceso (llegadas / min)</h3>
-    <div id="densities"></div>
-  </div>
+  <!-- CONTENEDOR DE NOTIFICACIONES TOAST -->
+  <div class="toast-container" id="toastContainer"></div>
 
-  <div class="panel">
-    <h3>Eventos recientes</h3>
-    <div class="log" id="log"></div>
-  </div>
-</div>
-
-<footer>Backend local FastAPI + MQTT + SQLite &middot; WebSocket /ws</footer>
-
-<script>
-const ACCESS = ["norte", "sur", "este", "oeste"];
-const grid = document.getElementById("grid");
-const logBox = document.getElementById("log");
-let mode = "auto";
-let lastState = null;
-
-/* ---------- construir tarjetas ---------- */
-function buildCards() {
-  grid.innerHTML = "";
-  ACCESS.forEach(id => {
-    const card = document.createElement("div");
-    card.className = "card";
-    card.id = "card-" + id;
-    card.innerHTML = `
-      <h2 id="name-${id}">${id.toUpperCase()}</h2>
-      <div class="sub" id="status-${id}">--</div>
-      <div class="semaphore">
-        <div class="bulb r" id="b-r-${id}"></div>
-        <div class="bulb y" id="b-y-${id}"></div>
-        <div class="bulb g" id="b-g-${id}"></div>
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-inner">
+      <div>
+        <strong>SmartTraffic IoT</strong> &bull; Backend FastAPI + Mosquitto MQTT + SQLite &bull; Conexión WebSocket <code>/ws</code>
       </div>
-      <div class="manual">
-        <button class="r" data-a="${id}" data-c="red">R</button>
-        <button class="y" data-a="${id}" data-c="yellow">A</button>
-        <button class="g" data-a="${id}" data-c="green">V</button>
+      <div>
+        Diseñado con paleta Blanco, Negro, Azul y Amarillo vial
       </div>
-      <div class="stats">
-        <div class="row"><span>Distancia</span><span class="val" id="d-${id}">--</span></div>
-        <div class="row"><span>Vehiculos</span><span class="val" id="v-${id}">0</span></div>
-        <div class="row"><span>Llegadas 60s</span><span class="val" id="a-${id}">0</span></div>
-      </div>
-      <div class="bar"><i id="bar-${id}"></i></div>
-    `;
-    grid.appendChild(card);
-  });
+    </div>
+  </footer>
 
-  document.querySelectorAll(".manual button").forEach(b => {
-    b.addEventListener("click", () => {
-      post("/api/light", { access: b.dataset.a, color: b.dataset.c });
-    });
-  });
-}
+  <!-- ==========================================================================
+       SCRIPTS JAVASCRIPT & LÓGICA DE CONTROL
+       ========================================================================== -->
+  <script>
+    const ACCESS = ["norte", "sur", "este", "oeste"];
+    const grid = document.getElementById("grid");
+    const logBox = document.getElementById("log");
+    const toastContainer = document.getElementById("toastContainer");
+    
+    let mode = "auto";
+    let lastState = null;
 
-/* ---------- render ---------- */
-function render(s) {
-  lastState = s;
-  mode = s.mode;
-  document.body.classList.toggle("manual-mode", mode === "manual");
-  document.getElementById("btnAuto").classList.toggle("active", mode === "auto");
-  document.getElementById("btnManual").classList.toggle("active", mode === "manual");
+    /* ---------- Sistema de Notificaciones Toast (Reemplaza alert) ---------- */
+    function showToast(message, type = 'info') {
+      const toast = document.createElement("div");
+      toast.className = `toast ${type}`;
+      
+      let icon = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`;
+      if (type === 'success') {
+        icon = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+      } else if (type === 'error') {
+        icon = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`;
+      } else if (type === 'warning') {
+        icon = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`;
+      }
 
-  document.getElementById("espDot").className = "dot " + (s.online ? "on" : "off");
-  document.getElementById("espText").textContent = s.online ? "en linea" : "sin telemetria";
-  document.getElementById("modeText").textContent =
-    (mode === "auto" ? "Automatico" : "Manual") +
-    (s.reported_mode && s.reported_mode !== mode ? ` (ESP32: ${s.reported_mode})` : "");
-  document.getElementById("greenAccess").textContent = (s.green || "--").toUpperCase();
-  document.getElementById("totalV").textContent = s.totals ? s.totals.vehicles : 0;
-  document.getElementById("lastPkg").textContent = s.last_telemetry || "--";
+      toast.innerHTML = `${icon}<span>${message}</span>`;
+      toastContainer.appendChild(toast);
 
-  const maxArr = Math.max(1, ...ACCESS.map(a => s.access[a].arrivals_60s));
-
-  ACCESS.forEach(id => {
-    const a = s.access[id];
-    document.getElementById("name-" + id).textContent = a.name.toUpperCase();
-    document.getElementById("b-r-" + id).classList.toggle("on", a.light === "red");
-    document.getElementById("b-y-" + id).classList.toggle("on", a.light === "yellow");
-    document.getElementById("b-g-" + id).classList.toggle("on", a.light === "green");
-    document.getElementById("d-" + id).textContent =
-      a.distance === null || a.distance === undefined ? "sin dato" : a.distance.toFixed(1) + " cm";
-    document.getElementById("v-" + id).textContent = a.vehicles;
-    document.getElementById("a-" + id).textContent = a.arrivals_60s;
-    document.getElementById("bar-" + id).style.width =
-      Math.round(100 * a.arrivals_60s / maxArr) + "%";
-    const st = document.getElementById("status-" + id);
-    st.textContent = a.occupied ? "vehiculo presente" : "libre";
-    st.className = "sub";
-  });
-
-  const d = document.getElementById("densities");
-  d.innerHTML = ACCESS.map(id => {
-    const a = s.access[id];
-    const pct = Math.round(100 * a.arrivals_60s / maxArr);
-    const color = a.light === "green" ? "var(--green)" : a.light === "yellow" ? "var(--yellow)" : "var(--red)";
-    return `
-      <div class="row" style="display:flex; align-items:center; gap:8px; padding:6px 0">
-        <span style="width:60px; color:${color}; font-weight:700">${a.name}</span>
-        <div class="bar" style="flex:1"><i style="width:${pct}%"></i></div>
-        <span class="val" style="width:40px; text-align:right">${a.arrivals_60s}</span>
-      </div>`;
-  }).join("");
-}
-
-function addLog(entry) {
-  const div = document.createElement("div");
-  const tag = entry.access ? `<b>${String(entry.access).toUpperCase()}</b> ` : "";
-  div.innerHTML = `<span class="t">${(entry.ts || "").slice(11, 19) || "--:--:--"}</span>${tag}${entry.detail || entry.kind || ""}`;
-  logBox.prepend(div);
-  while (logBox.children.length > 60) logBox.removeChild(logBox.lastChild);
-}
-
-/* ---------- acciones ---------- */
-async function post(url, body) {
-  try {
-    const r = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body)
-    });
-    if (!r.ok) {
-      const e = await r.json().catch(() => ({}));
-      alert(e.detail || ("Error " + r.status));
+      setTimeout(() => {
+        toast.style.opacity = "0";
+        toast.style.transform = "translateX(50px)";
+        setTimeout(() => toast.remove(), 250);
+      }, 4000);
     }
-  } catch (err) {
-    alert("No se pudo contactar al servidor: " + err);
-  }
-}
 
-document.getElementById("btnAuto").onclick = () => post("/api/mode", { mode: "auto" });
-document.getElementById("btnManual").onclick = () => post("/api/mode", { mode: "manual" });
-document.getElementById("btnAllRed").onclick = () => post("/api/all-red", {});
-document.getElementById("btnReset").onclick = () => post("/api/reset", {});
+    /* ---------- Modal de Confirmación ---------- */
+    const modal = document.getElementById("confirmModal");
+    const modalTitle = document.getElementById("modalTitle");
+    const modalDesc = document.getElementById("modalDesc");
+    const modalConfirmBtn = document.getElementById("modalConfirm");
+    const modalCancelBtn = document.getElementById("modalCancel");
+    let onModalConfirm = null;
 
-/* ---------- WebSocket ---------- */
-let ws;
-function connect() {
-  const proto = location.protocol === "https:" ? "wss" : "ws";
-  ws = new WebSocket(`${proto}://${location.host}/ws`);
+    function openModal(title, desc, confirmText, onConfirm) {
+      modalTitle.textContent = title;
+      modalDesc.textContent = desc;
+      modalConfirmBtn.textContent = confirmText || "Continuar";
+      onModalConfirm = onConfirm;
+      modal.classList.add("show");
+    }
 
-  ws.onopen = () => {
-    document.getElementById("wsDot").className = "dot on";
-    document.getElementById("wsText").textContent = "Servidor conectado";
-  };
-  ws.onmessage = (ev) => {
-    let msg;
-    try { msg = JSON.parse(ev.data); } catch { return; }
-    if (msg.type === "state") render(msg);
-    else if (msg.type === "event") addLog(msg);
-  };
-  ws.onclose = () => {
-    document.getElementById("wsDot").className = "dot off";
-    document.getElementById("wsText").textContent = "Reconectando...";
-    setTimeout(connect, 2000);
-  };
-  ws.onerror = () => ws.close();
-}
-setInterval(() => { if (ws && ws.readyState === 1) ws.send("ping"); }, 15000);
+    modalCancelBtn.onclick = () => {
+      modal.classList.remove("show");
+      onModalConfirm = null;
+    };
 
-/* ---------- arranque ---------- */
-buildCards();
-connect();
-fetch("/api/events?limit=30")
-  .then(r => r.json())
-  .then(d => (d.events || []).slice().reverse().forEach(addLog))
-  .catch(() => {});
-</script>
+    modalConfirmBtn.onclick = () => {
+      if (onModalConfirm) onModalConfirm();
+      modal.classList.remove("show");
+      onModalConfirm = null;
+    };
+
+    /* ---------- Construir Tarjetas de Accesos ---------- */
+    function buildCards() {
+      grid.innerHTML = "";
+      ACCESS.forEach(id => {
+        const card = document.createElement("div");
+        card.className = "access-card";
+        card.id = "card-" + id;
+        
+        const initial = id.charAt(0).toUpperCase();
+
+        card.innerHTML = `
+          <div class="access-card-header">
+            <div class="access-name-group">
+              <span class="access-name-badge">${initial}</span>
+              <h2 id="name-${id}">${id.toUpperCase()}</h2>
+            </div>
+            <div class="vehicle-status-pill" id="status-${id}">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle></svg>
+              <span>Libre</span>
+            </div>
+          </div>
+
+          <div class="semaphore-container">
+            <div class="semaphore-body">
+              <div class="bulb-visor"><div class="bulb r" id="b-r-${id}"></div></div>
+              <div class="bulb-visor"><div class="bulb y" id="b-y-${id}"></div></div>
+              <div class="bulb-visor"><div class="bulb g" id="b-g-${id}"></div></div>
+            </div>
+          </div>
+
+          <div class="manual-controls-panel manual">
+            <button class="btn-manual-light r" data-a="${id}" data-c="red" title="Poner en Rojo">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>
+              Rojo
+            </button>
+            <button class="btn-manual-light y" data-a="${id}" data-c="yellow" title="Poner en Amarillo">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>
+              Ámbar
+            </button>
+            <button class="btn-manual-light g" data-a="${id}" data-c="green" title="Poner en Verde">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>
+              Verde
+            </button>
+          </div>
+
+          <div class="access-stats stats">
+            <div class="stat-row">
+              <span class="stat-label">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h20M7 7l5 5-5 5"></path></svg>
+                Distancia ultrasónica
+              </span>
+              <span class="stat-val val" id="d-${id}">--</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="8" rx="2"></rect><path d="M5 11l2-5h10l2 5"></path></svg>
+                Vehículos acumulados
+              </span>
+              <span class="stat-val val" id="v-${id}">0</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+                Flujo (últimos 60s)
+              </span>
+              <span class="stat-val val" id="a-${id}">0</span>
+            </div>
+            
+            <div class="density-bar-track bar">
+              <i class="density-bar-fill" id="bar-${id}"></i>
+            </div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+
+      // Event listeners para botones manuales
+      document.querySelectorAll(".manual-controls-panel button").forEach(b => {
+        b.addEventListener("click", () => {
+          post("/api/light", { access: b.dataset.a, color: b.dataset.c });
+        });
+      });
+    }
+
+    /* ---------- Renderizado de Estado Central ---------- */
+    function render(s) {
+      lastState = s;
+      mode = s.mode;
+      
+      document.body.classList.toggle("manual-mode", mode === "manual");
+      document.getElementById("btnAuto").classList.toggle("active", mode === "auto");
+      document.getElementById("btnManual").classList.toggle("active", mode === "manual");
+
+      // Estado ESP32
+      const espDot = document.getElementById("espDot");
+      const espText = document.getElementById("espText");
+      espDot.className = "dot " + (s.online ? "on" : "off");
+      espText.textContent = s.online ? "En línea" : "Sin telemetría";
+
+      // Métricas KPI
+      document.getElementById("modeText").textContent =
+        (mode === "auto" ? "Automático" : "Manual") +
+        (s.reported_mode && s.reported_mode !== mode ? ` (ESP32: ${s.reported_mode})` : "");
+      
+      const greenName = s.green ? s.green.toUpperCase() : "--";
+      document.getElementById("greenAccess").textContent = greenName;
+      document.getElementById("totalV").textContent = s.totals ? s.totals.vehicles : 0;
+      document.getElementById("lastPkg").textContent = s.last_telemetry ? (s.last_telemetry.includes("T") ? s.last_telemetry.split("T")[1] : s.last_telemetry) : "--";
+
+      // Máximo de llegadas para barras relativas
+      const maxArr = Math.max(1, ...ACCESS.map(a => (s.access[a] ? s.access[a].arrivals_60s : 0)));
+
+      ACCESS.forEach(id => {
+        const a = s.access[id];
+        if (!a) return;
+
+        // Actualizar nombres y focos de semáforo
+        const nameEl = document.getElementById("name-" + id);
+        if (nameEl) nameEl.textContent = a.name.toUpperCase();
+        
+        const br = document.getElementById("b-r-" + id);
+        const by = document.getElementById("b-y-" + id);
+        const bg = document.getElementById("b-g-" + id);
+        
+        if (br) br.classList.toggle("on", a.light === "red");
+        if (by) by.classList.toggle("on", a.light === "yellow");
+        if (bg) bg.classList.toggle("on", a.light === "green");
+
+        // Resaltar tarjeta si tiene luz verde
+        const cardEl = document.getElementById("card-" + id);
+        if (cardEl) {
+          cardEl.classList.toggle("has-green", a.light === "green");
+        }
+
+        // Datos numéricos
+        const distEl = document.getElementById("d-" + id);
+        if (distEl) {
+          distEl.textContent = (a.distance === null || a.distance === undefined) 
+            ? "sin dato" 
+            : a.distance.toFixed(1) + " cm";
+        }
+
+        const vehEl = document.getElementById("v-" + id);
+        if (vehEl) vehEl.textContent = a.vehicles;
+
+        const arrEl = document.getElementById("a-" + id);
+        if (arrEl) arrEl.textContent = a.arrivals_60s;
+
+        const barEl = document.getElementById("bar-" + id);
+        if (barEl) {
+          barEl.style.width = Math.round(100 * a.arrivals_60s / maxArr) + "%";
+        }
+
+        // Pill de presencia de vehículo
+        const st = document.getElementById("status-" + id);
+        if (st) {
+          if (a.occupied) {
+            st.className = "vehicle-status-pill occupied";
+            st.innerHTML = `
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>
+              <span>Vehículo presente</span>
+            `;
+          } else {
+            st.className = "vehicle-status-pill";
+            st.innerHTML = `
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
+              <span>Vía libre</span>
+            `;
+          }
+        }
+
+        // Actualizar semáforo en miniatura en el croquis 2D
+        const mapBulb = document.getElementById("map-bulb-" + id);
+        if (mapBulb) {
+          if (a.light === "green") {
+            mapBulb.style.background = "#10b981";
+            mapBulb.style.boxShadow = "0 0 10px #10b981";
+          } else if (a.light === "yellow") {
+            mapBulb.style.background = "#f59e0b";
+            mapBulb.style.boxShadow = "0 0 10px #f59e0b";
+          } else {
+            mapBulb.style.background = "#ef4444";
+            mapBulb.style.boxShadow = "0 0 10px #ef4444";
+          }
+        }
+
+        // Actualizar auto en el croquis 2D
+        const mapCar = document.getElementById("map-car-" + id);
+        if (mapCar) {
+          mapCar.classList.toggle("active", !!a.occupied);
+        }
+      });
+
+      // Panel comparativo de densidades
+      const d = document.getElementById("densities");
+      if (d) {
+        d.innerHTML = ACCESS.map(id => {
+          const a = s.access[id];
+          if (!a) return "";
+          const pct = Math.round(100 * a.arrivals_60s / maxArr);
+          
+          let colorHex = "#ef4444";
+          if (a.light === "green") colorHex = "#10b981";
+          else if (a.light === "yellow") colorHex = "#f59e0b";
+
+          return `
+            <div class="density-item">
+              <span class="density-name" style="color:${colorHex}">
+                <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:${colorHex}"></span>
+                ${a.name}
+              </span>
+              <div class="density-meter-bg">
+                <div class="density-meter-bar" style="width:${pct}%; background:${colorHex}"></div>
+              </div>
+              <span class="density-num">${a.arrivals_60s}</span>
+            </div>
+          `;
+        }).join("");
+      }
+    }
+
+    /* ---------- Registro de Auditoría (Live Log) ---------- */
+    function addLog(entry) {
+      const div = document.createElement("div");
+      div.className = "log-item";
+      
+      const timeStr = (entry.ts || "").slice(11, 19) || new Date().toLocaleTimeString();
+      const badge = entry.access ? `<span class="log-badge">${String(entry.access).toUpperCase()}</span>` : "";
+      
+      div.innerHTML = `
+        <span class="log-time">${timeStr}</span>
+        ${badge}
+        <span class="log-msg">${entry.detail || entry.kind || ""}</span>
+      `;
+      
+      logBox.prepend(div);
+      while (logBox.children.length > 50) {
+        logBox.removeChild(logBox.lastChild);
+      }
+    }
+
+    /* ---------- Comunicación REST con el Servidor ---------- */
+    async function post(url, body) {
+      try {
+        const r = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body)
+        });
+        if (!r.ok) {
+          const e = await r.json().catch(() => ({}));
+          showToast(e.detail || ("Error en el servidor: HTTP " + r.status), "error");
+        } else {
+          if (url.includes("/mode")) {
+            showToast(`Modo cambiado a ${body.mode.toUpperCase()}`, "success");
+          } else if (url.includes("/all-red")) {
+            showToast("Comando ejecutado: Todos los semáforos en ROJO", "warning");
+          } else if (url.includes("/reset")) {
+            showToast("Contadores de vehículos reiniciados a cero", "info");
+          }
+        }
+      } catch (err) {
+        showToast("Error de conexión al servidor: " + err, "error");
+      }
+    }
+
+    // Botones de Modo
+    document.getElementById("btnAuto").onclick = () => post("/api/mode", { mode: "auto" });
+    document.getElementById("btnManual").onclick = () => post("/api/mode", { mode: "manual" });
+
+    // Botón Todos en Rojo con confirmación
+    document.getElementById("btnAllRed").onclick = () => {
+      if (mode !== "manual") {
+        showToast("Debes activar el Modo Manual antes de forzar todas las luces en rojo", "warning");
+        return;
+      }
+      openModal(
+        "Parada de Emergencia: Todos en Rojo",
+        "Esta acción cambiará inmediatamente las luces de todos los accesos (Norte, Sur, Este, Oeste) a ROJO. ¿Deseas continuar?",
+        "Poner en Rojo",
+        () => post("/api/all-red", {})
+      );
+    };
+
+    // Botón Reiniciar con confirmación
+    document.getElementById("btnReset").onclick = () => {
+      openModal(
+        "Reiniciar Contadores",
+        "Se restablecerán a 0 los vehículos registrados y la ventana de llegadas para todos los accesos. ¿Deseas proceder?",
+        "Reiniciar",
+        () => post("/api/reset", {})
+      );
+    };
+
+    /* ---------- WebSocket en Tiempo Real ---------- */
+    let ws;
+    function connect() {
+      const proto = location.protocol === "https:" ? "wss" : "ws";
+      ws = new WebSocket(`${proto}://${location.host}/ws`);
+
+      ws.onopen = () => {
+        document.getElementById("wsDot").className = "dot on";
+        document.getElementById("wsText").textContent = "Servidor Conectado";
+        showToast("Conexión en tiempo real establecida con el servidor", "success");
+      };
+
+      ws.onmessage = (ev) => {
+        let msg;
+        try { msg = JSON.parse(ev.data); } catch { return; }
+        if (msg.type === "state") render(msg);
+        else if (msg.type === "event") addLog(msg);
+      };
+
+      ws.onclose = () => {
+        document.getElementById("wsDot").className = "dot off";
+        document.getElementById("wsText").textContent = "Reconectando...";
+        setTimeout(connect, 2000);
+      };
+
+      ws.onerror = () => ws.close();
+    }
+
+    // Ping Keep-Alive
+    setInterval(() => {
+      if (ws && ws.readyState === 1) ws.send("ping");
+    }, 15000);
+
+    /* ---------- Inicialización ---------- */
+    buildCards();
+    connect();
+
+    // Cargar historial de eventos inicial
+    fetch("/api/events?limit=30")
+      .then(r => r.json())
+      .then(d => {
+        if (d.events && Array.isArray(d.events)) {
+          d.events.slice().reverse().forEach(addLog);
+        }
+      })
+      .catch(() => {});
+  </script>
 </body>
 </html>
